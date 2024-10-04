@@ -30,7 +30,7 @@ lcl <- ""
 setwd(lcl)
 load('MicroMacro.RData')
 #load climate datasets 
-#save(species_data, Species, ordination_results, hypervolume_results,ordination_restrict, hypervolume_restrict, nesting, landcover, w_rworldmap, sample_size, file='MicroMacro.RData')
+#save(species_data, pca_soiltemp, pca_chelsa, Species, ordination_results, hypervolume_results,ordination_restrict, hypervolume_restrict, nesting, landcover, w_rworldmap, tab,  sample_size, file='MicroMacro.RData')
 
 ## Step 1 - extracts raw climate data for each occurence point. For this use 
       #species_data <--  Species for which there were > 20 occurence points in both native and introduced range, after thinning to 1km resolution 
@@ -38,8 +38,8 @@ load('MicroMacro.RData')
       #Species  <-- list of species 
       #r  <--  Chelsa dataset at 1km 
       # SBio <-- SoilTemp dataset at 1km 
-#pca_SoilTemp <-- pca of soiltemp variables, created via: pca_soiltemp<- rasterPCA(SBio ,spca=TRUE, nComp=4, maskCheck=F) # this takes a long time 
-#pca_chelsa <- pca of the chelsa variables, created via:  pca_xhelsa<- rasterPCA(r ,spca=TRUE, nComp=4, maskCheck=F) # this takes a long time 
+#pca_soiltemp <-- pca of soiltemp variables, created via: pca_soiltemp<- rasterPCA(SBio ,spca=TRUE, nComp=4, maskCheck=F) # this takes a long time 
+#pca_chelsa <- pca of the chelsa variables, created via:  pca_chelsa<- rasterPCA(r ,spca=TRUE, nComp=4, maskCheck=F) # this takes a long time 
 
 
 ## Step 2 - niche shift analysis, produces 
@@ -841,201 +841,199 @@ plot3
 
 ########
 ### for Figure 4 ###
+### to produce the data takes a long time to run so has been commented out. to produce the figure you can use the vairbale 'tab' instead
 ########
 #### Load data
 ## Loading in the species and world data
-Species <- names(species_data)
-
-## for each species, compare the correlation between chelsa and sbio, and the varience between chelsa and sbio
-table1 <- NULL 
-tableVar <- NULL
-for (i in 1:length(species_data)) {
-  local <- species_data[[i]]
-  spe <-names(species_data[i])
-  bio1 <- cor.test(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio2 <- cor.test(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio3 <-cor.test(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio4 <-cor.test(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio5 <-cor.test(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio6 <-cor.test(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio7 <-cor.test(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio8 <-cor.test(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio9 <-cor.test(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio10 <-cor.test(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio11 <-cor.test(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  #join all the data together 
-  es <- cbind(bio1$estimate, bio2$estimate, bio3$estimate, bio4$estimate, bio5$estimate, bio6$estimate, bio7$estimate, bio8$estimate, bio9$estimate, bio10$estimate, bio11$estimate)
-  colnames(es) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
-  es
-  rownames(es) <- spe 
-  table1 <- rbind.data.frame(table1, es)
-  
-  # varience 
-  vbio1 <- var(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01) # sinnificant correlation too 
-  vbio2 <- var(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02) # sinnificant correlation too 
-  vbio3 <-var(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03) # sinnificant correlation too 
-  vbio4 <-var(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04) # sinnificant correlation too 
-  vbio5 <-var(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05) # sinnificant correlation too 
-  vbio6 <-var(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06) # sinnificant correlation too 
-  vbio7 <-var(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07) # sinnificant correlation too 
-  vbio8 <-var(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08) # sinnificant correlation too 
-  vbio9 <-var(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09) # sinnificant correlation too 
-  vbio10 <-var(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10) # sinnificant correlation too 
-  vbio11 <-var(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11) # sinnificant correlation too 
-  #join all the data together 
-  va <- cbind(vbio1, vbio2, vbio3, vbio4, vbio5, vbio6, vbio7, vbio8, vbio9, vbio10, vbio11)
-  colnames(va) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
-  rownames(va ) <- spe 
-  tableVar <- rbind.data.frame(  tableVar,   va)
-  
-}
-#write.csv(table1, '../Data/Results/correlationMacroMicroOcc.csv')
-table2 <- gather(table1 , variable, correlation, Bio1:Bio11)
-table2$variable <- factor(table2$variable, levels=c('Bio1','Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11'))
-
-max(table1[,1:11]); min(table1[,1:11])
-median(table1$Bio1); range(table1$Bio1)
-median(table1$Bio2); range(table1$Bio2)
-median(table1$Bio3);range(table1$Bio3)
-median(table1$Bio4); range(table1$Bio4)
-median(table1$Bio5); range(table1$Bio5)
-median(table1$Bio6); range(table1$Bio6)
-median(table1$Bio7); range(table1$Bio7)
-median(table1$Bio8); range(table1$Bio8)
-median(table1$Bio9); range(table1$Bio9)
-median(table1$Bio10); range(table1$Bio10)
-median(table1$Bio11); range(table1$Bio11)
-
-hist(table1$Bio11)
-table1$species <- rownames(table1)
-#statistical differences between observed correlations  - correlation
-test <-  melt( table1, id.vars=c("species"))
-kruskal.test(test$value, test$variable) # significant 
-pairwise.wilcox.test(test$value, test$variable, p.adjust.method='BH')
-#statistical differences between observed correlations  - varitation
-tableVar$species <- rownames( tableVar)
-test <-  melt(  tableVar, id.vars=c("species"))
-kruskal.test(test$value, test$variable) # significant 
-pairwise.wilcox.test(test$value, test$variable, p.adjust.method='BH')
-
-
-#### then compared observed correlaitons/ varience to randomly generated variables , this takes a long time to run can use the vairbale 'tab' instead
-ok <- st_as_sf(w_rworldmap)
-#SBio <- rast(SBio)
-#r <- rast(r)
-# load in chelsa data downloaded from https://chelsa-climate.org/exchelsa-extended-bioclim/
-rastlist <- list.files(path = "~/Desktop/Chelsa/", pattern='.tif',  all.files=TRUE, full.names=T)
-r <- stack(rastlist)
-crs(r) <- crs(' +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
-r <- r[[1:11]]
-r <- rast(r)
-# load in data downloaded from https://zenodo.org/records/7134169 (version 2)
-rastlist <- list.files(path = "SBIO/Raw", pattern='.tif',  all.files=TRUE, full.names=T)
-SBio <- stack(rastlist)
-crs(SBio) <- crs(' +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
-SBio <- rast(SBio)
-SBio
-# making sure the two rasters are exactly the same 
-r <- crop(r, SBio)
-r <- terra::project(r, SBio)
-SBio <- terra::project( SBio, r)
-r <- terra::mask(r, SBio)
-all.equal(r, SBio)
-
-
-tabler <- NULL 
-tableVar2 <- NULL 
-# do correlation of ALL pixels 
-#example sepceis with the plot of the whole world, xy on and aggregated map and then plot one random dample where they are on the correlartion plot then plot one species, and two variables- bio 1 and 3 and see the effect to illustrate whats happning 
-for (i in 1:1000) {
-  set.seed(i)
-  points <- st_sample(ok, size = 1000, type = "random", crs = st_crs(4326)) 
-  coordinatespoints <-  st_coordinates(points) %>% 
-    as.data.frame()
-  df <- raster::extract(r, coordinatespoints)
-  df2 <- raster::extract(SBio, coordinatespoints)
-  df3 <- cbind(df, df2)
-  local<- df3[complete.cases(df3), ] %>% as.data.frame()
-  bio1 <- cor.test(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio2 <- cor.test(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio3 <-cor.test(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio4 <-cor.test(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio5 <-cor.test(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio6 <-cor.test(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio7 <-cor.test(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio8 <-cor.test(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio9 <-cor.test(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio10 <-cor.test(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  bio11 <-cor.test(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
-  #join all the data together 
-  es <- cbind(bio1$estimate, bio2$estimate, bio3$estimate, bio4$estimate, bio5$estimate, bio6$estimate, bio7$estimate, bio8$estimate, bio9$estimate, bio10$estimate, bio11$estimate)
-  colnames(es) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
-  es
-  tabler <- rbind.data.frame(tabler, es)
-  
-  
-  # varience 
-  vbio1 <- var(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01) # sinnificant correlation too 
-  vbio2 <- var(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02) # sinnificant correlation too 
-  vbio3 <-var(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03) # sinnificant correlation too 
-  vbio4 <-var(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04) # sinnificant correlation too 
-  vbio5 <-var(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05) # sinnificant correlation too 
-  vbio6 <-var(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06) # sinnificant correlation too 
-  vbio7 <-var(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07) # sinnificant correlation too 
-  vbio8 <-var(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08) # sinnificant correlation too 
-  vbio9 <-var(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09) # sinnificant correlation too 
-  vbio10 <-var(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10) # sinnificant correlation too 
-  vbio11 <-var(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11) # sinnificant correlation too 
-  va <- cbind(vbio1, vbio2, vbio3, vbio4, vbio5, vbio6, vbio7, vbio8, vbio9, vbio10, vbio11)
-  colnames(va) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
-  tableVar2 <- rbind.data.frame(  tableVar2,   va)
-  
-  base::print(paste0('done', as.numeric(i)))
-}
-
-tabler2 <- gather(tabler , variable, correlation, Bio1:Bio11)
-tabler2$variable <- factor(tabler2$variable, levels=c('Bio1','Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11'))
-#wide to long format for plotting
-tableVar2 <- gather( tableVar, variable, correlation, Bio1:Bio11)
-tableVar2$variable <- factor(tableVar2$variable, levels=c('Bio1','Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11'))
-
-### figure 4
-table2$data <- 'Species'
-tabler2$data <- 'Random'
-#tabler2$species <- 'random'
-tab <- rbind(table2, tabler2)
-
-tab$merged <- factor(paste( tab$data, tab$variable,sep='_'),
-                     levels=c("Random_Bio1" ,  "Random_Bio2" ,"Random_Bio3" ,"Random_Bio4","Random_Bio5",  
-                              "Random_Bio6","Random_Bio7","Random_Bio8","Random_Bio9","Random_Bio10" ,"Random_Bio11",
-                              "Species_Bio1" ,"Species_Bio2" ,"Species_Bio3" ,"Species_Bio4","Species_Bio5",  
-                              "Species_Bio6", "Species_Bio7" ,"Species_Bio8" ,
-                              "Species_Bio9","Species_Bio10","Species_Bio11" ))
-tab1 <- tab %>%  filter(variable=='Bio1') 
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio2')  
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio3') 
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio4') 
-kruskal.test(tab1$correlation, tab1$data) # not significant 
-tab1 <-tab %>%  filter(variable=='Bio5') 
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio6') 
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio7')
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio8') 
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio9')
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio10')
-kruskal.test(tab1$correlation, tab1$data) # significant 
-tab1 <-tab %>%  filter(variable=='Bio11') 
-kruskal.test(tab1$correlation, tab1$data) # significant 
+# Species <- names(species_data)
+# 
+# ok <- st_as_sf(w_rworldmap)
+# 
+# # load in chelsa data downloaded from https://chelsa-climate.org/exchelsa-extended-bioclim/
+# rastlist <- list.files(path = "~/Desktop/Chelsa/", pattern='.tif',  all.files=TRUE, full.names=T)
+# r <- stack(rastlist)
+# crs(r) <- crs(' +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
+# r <- r[[1:11]]
+# r <- rast(r)
+# # load in data downloaded from https://zenodo.org/records/7134169 (version 2)
+# rastlist <- list.files(path = "SBIO/Raw", pattern='.tif',  all.files=TRUE, full.names=T)
+# SBio <- stack(rastlist)
+# crs(SBio) <- crs(' +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0')
+# SBio <- rast(SBio)
+# SBio
+# # making sure the two rasters are exactly the same 
+# r <- crop(r, SBio)
+# r <- terra::project(r, SBio)
+# SBio <- terra::project( SBio, r)
+# r <- terra::mask(r, SBio)
+# all.equal(r, SBio)
+# 
+# ## for each species, compare the correlation between chelsa and sbio, and the varience between chelsa and sbio
+# table1 <- NULL 
+# tableVar <- NULL
+# for (i in 1:length(species_data)) {
+#   local <- species_data[[i]]
+#   spe <-names(species_data[i])
+#   bio1 <- cor.test(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio2 <- cor.test(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio3 <-cor.test(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio4 <-cor.test(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio5 <-cor.test(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio6 <-cor.test(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio7 <-cor.test(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio8 <-cor.test(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio9 <-cor.test(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio10 <-cor.test(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio11 <-cor.test(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   #join all the data together 
+#   es <- cbind(bio1$estimate, bio2$estimate, bio3$estimate, bio4$estimate, bio5$estimate, bio6$estimate, bio7$estimate, bio8$estimate, bio9$estimate, bio10$estimate, bio11$estimate)
+#   colnames(es) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
+#   es
+#   rownames(es) <- spe 
+#   table1 <- rbind.data.frame(table1, es)
+#   
+#   # varience 
+#   vbio1 <- var(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01) # sinnificant correlation too 
+#   vbio2 <- var(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02) # sinnificant correlation too 
+#   vbio3 <-var(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03) # sinnificant correlation too 
+#   vbio4 <-var(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04) # sinnificant correlation too 
+#   vbio5 <-var(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05) # sinnificant correlation too 
+#   vbio6 <-var(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06) # sinnificant correlation too 
+#   vbio7 <-var(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07) # sinnificant correlation too 
+#   vbio8 <-var(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08) # sinnificant correlation too 
+#   vbio9 <-var(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09) # sinnificant correlation too 
+#   vbio10 <-var(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10) # sinnificant correlation too 
+#   vbio11 <-var(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11) # sinnificant correlation too 
+#   #join all the data together 
+#   va <- cbind(vbio1, vbio2, vbio3, vbio4, vbio5, vbio6, vbio7, vbio8, vbio9, vbio10, vbio11)
+#   colnames(va) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
+#   rownames(va ) <- spe 
+#   tableVar <- rbind.data.frame(  tableVar,   va)
+#   
+# }
+# #write.csv(table1, '../Data/Results/correlationMacroMicroOcc.csv')
+# table2 <- gather(table1 , variable, correlation, Bio1:Bio11)
+# table2$variable <- factor(table2$variable, levels=c('Bio1','Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11'))
+# 
+# max(table1[,1:11]); min(table1[,1:11])
+# median(table1$Bio1); range(table1$Bio1)
+# median(table1$Bio2); range(table1$Bio2)
+# median(table1$Bio3);range(table1$Bio3)
+# median(table1$Bio4); range(table1$Bio4)
+# median(table1$Bio5); range(table1$Bio5)
+# median(table1$Bio6); range(table1$Bio6)
+# median(table1$Bio7); range(table1$Bio7)
+# median(table1$Bio8); range(table1$Bio8)
+# median(table1$Bio9); range(table1$Bio9)
+# median(table1$Bio10); range(table1$Bio10)
+# median(table1$Bio11); range(table1$Bio11)
+# 
+# hist(table1$Bio11)
+# table1$species <- rownames(table1)
+# #statistical differences between observed correlations  - correlation
+# test <-  melt( table1, id.vars=c("species"))
+# kruskal.test(test$value, test$variable) # significant 
+# pairwise.wilcox.test(test$value, test$variable, p.adjust.method='BH')
+# #statistical differences between observed correlations  - varitation
+# tableVar$species <- rownames( tableVar)
+# test <-  melt(  tableVar, id.vars=c("species"))
+# kruskal.test(test$value, test$variable) # significant 
+# pairwise.wilcox.test(test$value, test$variable, p.adjust.method='BH')
+# 
+# 
+# #### then compared observed correlaitons/ varience to randomly generated variables 
+# tabler <- NULL 
+# tableVar2 <- NULL 
+# # do correlation of ALL pixels 
+# #example sepceis with the plot of the whole world, xy on and aggregated map and then plot one random dample where they are on the correlartion plot then plot one species, and two variables- bio 1 and 3 and see the effect to illustrate whats happning 
+# for (i in 1:1000) {
+#   set.seed(i)
+#   points <- st_sample(ok, size = 1000, type = "random", crs = st_crs(4326)) 
+#   coordinatespoints <-  st_coordinates(points) %>% 
+#     as.data.frame()
+#   df <- raster::extract(r, coordinatespoints)
+#   df2 <- raster::extract(SBio, coordinatespoints)
+#   df3 <- cbind(df, df2)
+#   local<- df3[complete.cases(df3), ] %>% as.data.frame()
+#   bio1 <- cor.test(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio2 <- cor.test(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio3 <-cor.test(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio4 <-cor.test(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio5 <-cor.test(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio6 <-cor.test(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio7 <-cor.test(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio8 <-cor.test(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio9 <-cor.test(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio10 <-cor.test(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   bio11 <-cor.test(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11, method=c("kendall"), alternative='two.sided') # sinnificant correlation too 
+#   #join all the data together 
+#   es <- cbind(bio1$estimate, bio2$estimate, bio3$estimate, bio4$estimate, bio5$estimate, bio6$estimate, bio7$estimate, bio8$estimate, bio9$estimate, bio10$estimate, bio11$estimate)
+#   colnames(es) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
+#   es
+#   tabler <- rbind.data.frame(tabler, es)
+#   
+#   
+#   # varience 
+#   vbio1 <- var(local$SBIO1_0_5cm_Annual_Mean_Temperature, local$CHELSA_bio10_01) # sinnificant correlation too 
+#   vbio2 <- var(local$SBIO2_0_5cm_mean_diurnal_range, local$CHELSA_bio10_02) # sinnificant correlation too 
+#   vbio3 <-var(local$SBIO3_0_5cm_Isothermality, local$CHELSA_bio10_03) # sinnificant correlation too 
+#   vbio4 <-var(local$SBIO4_0_5cm_Temperature_Seasonality, local$CHELSA_bio10_04) # sinnificant correlation too 
+#   vbio5 <-var(local$SBIO5_0_5cm_MaxT_warmestMonth, local$CHELSA_bio10_05) # sinnificant correlation too 
+#   vbio6 <-var(local$SBIO6_0_5cm_MinT_coldestMonth, local$CHELSA_bio10_06) # sinnificant correlation too 
+#   vbio7 <-var(local$SBIO7_0_5cm_annual_range, local$CHELSA_bio10_07) # sinnificant correlation too 
+#   vbio8 <-var(local$SBIO8_0_5cm_meanT_wettestQ, local$CHELSA_bio10_08) # sinnificant correlation too 
+#   vbio9 <-var(local$SBIO9_0_5cm_meanT_driestQ, local$CHELSA_bio10_09) # sinnificant correlation too 
+#   vbio10 <-var(local$SBIO10_0_5cm_meanT_warmestQ, local$CHELSA_bio10_10) # sinnificant correlation too 
+#   vbio11 <-var(local$SBIO11_0_5cm_meanT_coldestQ, local$CHELSA_bio10_11) # sinnificant correlation too 
+#   va <- cbind(vbio1, vbio2, vbio3, vbio4, vbio5, vbio6, vbio7, vbio8, vbio9, vbio10, vbio11)
+#   colnames(va) <- c('Bio1', 'Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11')
+#   tableVar2 <- rbind.data.frame(  tableVar2,   va)
+#   
+#   base::print(paste0('done', as.numeric(i)))
+# }
+# 
+# tabler2 <- gather(tabler , variable, correlation, Bio1:Bio11)
+# tabler2$variable <- factor(tabler2$variable, levels=c('Bio1','Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11'))
+# #wide to long format for plotting
+# tableVar2 <- gather( tableVar, variable, correlation, Bio1:Bio11)
+# tableVar2$variable <- factor(tableVar2$variable, levels=c('Bio1','Bio2', 'Bio3', 'Bio4', 'Bio5', 'Bio6', 'Bio7', 'Bio8', 'Bio9', 'Bio10', 'Bio11'))
+# 
+# ### figure 4
+# table2$data <- 'Species'
+# tabler2$data <- 'Random'
+# #tabler2$species <- 'random'
+# tab <- rbind(table2, tabler2)
+# 
+# tab$merged <- factor(paste( tab$data, tab$variable,sep='_'),
+#                      levels=c("Random_Bio1" ,  "Random_Bio2" ,"Random_Bio3" ,"Random_Bio4","Random_Bio5",  
+#                               "Random_Bio6","Random_Bio7","Random_Bio8","Random_Bio9","Random_Bio10" ,"Random_Bio11",
+#                               "Species_Bio1" ,"Species_Bio2" ,"Species_Bio3" ,"Species_Bio4","Species_Bio5",  
+#                               "Species_Bio6", "Species_Bio7" ,"Species_Bio8" ,
+#                               "Species_Bio9","Species_Bio10","Species_Bio11" ))
+# tab1 <- tab %>%  filter(variable=='Bio1') 
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio2')  
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio3') 
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio4') 
+# kruskal.test(tab1$correlation, tab1$data) # not significant 
+# tab1 <-tab %>%  filter(variable=='Bio5') 
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio6') 
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio7')
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio8') 
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio9')
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio10')
+# kruskal.test(tab1$correlation, tab1$data) # significant 
+# tab1 <-tab %>%  filter(variable=='Bio11') 
+# kruskal.test(tab1$correlation, tab1$data) # significant 
 
 colp <- c(rep('grey20',11),viridis(11,begin=0.2, end=0.85))
-
 plot4 <- ggplot(tab, aes(x=variable, y=correlation, fill=merged, col=merged) )+ 
                   ggdist::stat_halfeye(normalize = "groups",adjust = .5,  width = .7, .width = 0, 
                                        justification = -.2, point_colour = NA, alpha=0.7, outline_bars=T) + 
